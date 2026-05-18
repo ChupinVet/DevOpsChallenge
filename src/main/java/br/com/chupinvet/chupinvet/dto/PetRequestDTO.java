@@ -31,7 +31,7 @@ public record PetRequestDTO(
 
         @Schema(description = "Peso do pet", example = "25.5")
         @Positive
-        BigDecimal peso,
+        double peso,
 
         @Schema(description = "ID do responsável", example = "1")
         @NotNull

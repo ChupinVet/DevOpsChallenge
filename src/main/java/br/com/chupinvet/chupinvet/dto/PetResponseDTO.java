@@ -24,7 +24,7 @@ public record PetResponseDTO(
         LocalDate dataNascimento,
 
         @Schema(example = "25.5")
-        BigDecimal peso,
+        double peso,
 
         @Schema(example = "1")
         Long idResponsavel,
