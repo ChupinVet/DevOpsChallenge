@@ -1,0 +1,28 @@
+services:
+  oracle:
+    image: gvenzl/oracle-xe:21-slim
+    container_name: oracle-chupinvet
+    environment:
+      ORACLE_PASSWORD: oracle
+      APP_USER: chupinvet
+      APP_USER_PASSWORD: chupinvet
+    ports:
+      - "1521:1521"
+    volumes:
+      - oracle_data:/opt/oracle/oradata
+
+  app:
+    image: localhost/chupinvet-api:latest
+    container_name: chupinvet-api
+    depends_on:
+      - oracle
+    restart: on-failure
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:oracle:thin:@oracle:1521/XEPDB1
+      SPRING_DATASOURCE_USERNAME: chupinvet
+      SPRING_DATASOURCE_PASSWORD: chupinvet
+
+volumes:
+  oracle_data:

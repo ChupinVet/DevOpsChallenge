@@ -68,7 +68,7 @@ public class Pet {
     private LocalDate dataNascimento;
 
     @Positive
-    @Column(name = "vl_peso", precision = 5, scale = 2)
+    @Column(name = "vl_peso")
     @Schema(
             description = "Peso do pet",
             example = "25.5"
