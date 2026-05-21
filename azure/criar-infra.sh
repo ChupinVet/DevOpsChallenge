@@ -104,16 +104,6 @@ if ! curl -fsS "http://$PUBLIC_IP:$APP_PORT/responsaveis" >/dev/null 2>&1; then
   exit 1
 fi
 
-echo "Gerando outputs.json..."
-cat > outputs.json <<EOF
-{
-  "resource_group": "$RG",
-  "vm_name": "$VM_NAME",
-  "public_ip": "$PUBLIC_IP",
-  "app_port": $APP_PORT,
-  "api_url": "http://$PUBLIC_IP:$APP_PORT"
-}
-EOF
 
 echo "Finalizado com sucesso!"
 echo "API: http://$PUBLIC_IP:$APP_PORT"
