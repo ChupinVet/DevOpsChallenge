@@ -25,7 +25,6 @@ A aplicação tem como objetivo auxiliar no gerenciamento de informações relac
 |---|---|---|       
 |Agatha Yie Won Yun|RM561507|2TDSA| 
 |Ana Claudia Fernandes Martins| RM561190| 2TDSR|  
-|Anabelle Rosseto Rodrigues| RM564526| 2TDSR|  
 |Samantha Faruolo Galdi| RM554794| 2TDSA|
 |Vitor Fria Dalmagro| RM566052| 2TDSA|
 
