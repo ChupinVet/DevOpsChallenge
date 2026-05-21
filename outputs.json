@@ -1,0 +1,7 @@
+{
+  "resource_group": "rg-chupinvet-devops",
+  "vm_name": "vm-chupinvet-app",
+  "public_ip": "20.151.203.110",
+  "app_port": 8080,
+  "api_url": "http://20.151.203.110:8080"
+}
