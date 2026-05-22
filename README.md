@@ -20,17 +20,16 @@
 # Benefícios para o negócio
 A API ChupinVet atua como camada de comunicação entre o aplicativo mobile do projeto e o banco de dados Oracle, 
 permitindo que todas as informações cadastradas no sistema sejam acessadas, 
-atualizadas e gerenciadas de forma centralizada e segura.
+atualizadas e gerenciadas.
 
 Através da API, o aplicativo mobile consegue realizar operações de cadastro, 
 consulta, atualização e remoção de dados relacionados a pets, responsáveis e veterinários, 
 garantindo integração entre o front-end mobile e a base de dados da aplicação.
 
-Entre os principais benefícios da utilização da API no projeto estão a 
+A utilização da API no projeto estão a 
 centralização das regras de negócio da aplicação, permitindo que todas as 
-operações e validações sejam realizadas de forma padronizada e segura. 
-A API também possibilita uma comunicação eficiente entre o aplicativo mobile e o banco de dados Oracle, 
-garantindo maior organização e facilidade na manutenção do sistema.
+operações e validações sejam realizadas de forma padronizada.
+
 
 ---
 
