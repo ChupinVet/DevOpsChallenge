@@ -18,53 +18,69 @@
 ---
 
 # Benefícios para o negócio
+A API ChupinVet atua como camada de comunicação entre o aplicativo mobile do projeto e o banco de dados Oracle, 
+permitindo que todas as informações cadastradas no sistema sejam acessadas, 
+atualizadas e gerenciadas de forma centralizada e segura.
+
+Através da API, o aplicativo mobile consegue realizar operações de cadastro, 
+consulta, atualização e remoção de dados relacionados a pets, responsáveis e veterinários, 
+garantindo integração entre o front-end mobile e a base de dados da aplicação.
+
+Entre os principais benefícios da utilização da API no projeto estão a 
+centralização das regras de negócio da aplicação, permitindo que todas as 
+operações e validações sejam realizadas de forma padronizada e segura. 
+A API também possibilita uma comunicação eficiente entre o aplicativo mobile e o banco de dados Oracle, 
+garantindo maior organização e facilidade na manutenção do sistema.
 
 ---
 
 # Desenho da arquitetura
-
+![Diagrama da Arquitetura](/IMAGES/diagrama.png)
 ---
 
 # Endpoints da API
 
 ## Responsáveis
 
-| Método | Endpoint | Descrição |
-|---|---|---|
-| GET | `/responsaveis` | Lista todos os responsáveis |
-| GET | `/responsaveis/{id}` | Busca responsável por ID |
-| POST | `/responsaveis` | Cadastra um novo responsável |
-| PUT | `/responsaveis/{id}` | Atualiza um responsável |
-| DELETE | `/responsaveis/{id}` | Remove um responsável |
+| Método | Endpoint                                             | Descrição                       |
+|---|------------------------------------------------------|---------------------------------|
+| POST | `/responsaveis`                                      | Cadastra um novo responsável    |
+| GET | `/responsaveis`                                      | Lista todos os responsáveis     |
+| GET | `/responsaveis/{id}`                                 | Busca responsável por ID        |
+| GET | `/responsaveis?page=0&size=10&sort=nomeUsuario,asc ` | Busca responsável com paginação |
+| PUT | `/responsaveis/{id}`                                 | Atualiza um responsável         |
+| DELETE | `/responsaveis/{id}`                                 | Remove um responsável           |
 
 ---
 
 ## Pets
 
-| Método | Endpoint | Descrição |
-|---|---|---|
-| GET | `/pets` | Lista todos os pets |
-| GET | `/pets/{id}` | Busca pet por ID |
-| POST | `/pets` | Cadastra um novo pet |
-| PUT | `/pets/{id}` | Atualiza um pet |
-| DELETE | `/pets/{id}` | Remove um pet |
-| GET | `/pets/nome?nomePet=Thor` | Busca pets por nome |
+| Método | Endpoint | Descrição             |
+|---|---|-----------------------|
+| POST | `/pets` | Cadastra um novo pet  |
+| GET | `/pets` | Lista todos os pets   |
+| GET | `/pets/{id}` | Busca pet por ID      |
+| GET | `/pets?page=0&size=10&sort=nomePet,asc` | Busca com paginação   |
+| GET | `/pets/nome?nomePet=Thor` | Busca pets por nome   |
 | GET | `/pets/especie?especie=Cachorro` | Busca pets por espécie |
-| GET | `/pets/raca?raca=Pug` | Busca pets por raça |
+| GET | `/pets/raca?raca=Pug` | Busca pets por raça   |
+| PUT | `/pets/{id}` | Atualiza um pet       |
+| DELETE | `/pets/{id}` | Remove um pet         |
 
 ---
 
 ## Veterinários
 
-| Método | Endpoint | Descrição |
-|---|---|---|
-| GET | `/veterinarios` | Lista todos os veterinários |
-| GET | `/veterinarios/{id}` | Busca veterinário por ID |
-| POST | `/veterinarios` | Cadastra um novo veterinário |
-| PUT | `/veterinarios/{id}` | Atualiza um veterinário |
-| DELETE | `/veterinarios/{id}` | Remove um veterinário |
-| GET | `/veterinarios/especialidade?especialidade=Cirurgia` | Busca veterinários por especialidade |
+| Método | Endpoint | Descrição                              |
+|---|---|----------------------------------------|
+| POST | `/veterinarios` | Cadastra um novo veterinário           |
+| GET | `/veterinarios` | Lista todos os veterinários            |
+| GET | `/veterinarios/{id}` | Busca veterinário por ID               |
+| GET | `/veterinarios?page=0&size=10&sort=nomeUsuario,asc` | Busca veterinário com paginação        |
+| GET | `/veterinarios/especialidade?especialidade=Cirurgia` | Busca veterinários por especialidade   |
 | GET | `/veterinarios/servico?tipoServico=Consulta` | Busca veterinários por tipo de serviço |
+| PUT | `/veterinarios/{id}` | Atualiza um veterinário                |
+| DELETE | `/veterinarios/{id}` | Remove um veterinário                  |
 
 ---
 
@@ -75,16 +91,124 @@
 | Swagger UI | `/swagger-ui.html` |
 
 ---
-## Dockerfile
+# Dockerfile
 
-## Docker Compose
+O projeto utiliza um Dockerfile multi-stage com otimização utilizando jlink e imagens Distroless, reduzindo significativamente o tamanho da imagem final da aplicação.
 
-## Azure CLI
+Principais características:
 
-## Como Executar Localmente
+- Multi-stage build
+- Runtime customizado com jlink
+- Imagem Distroless
+- Execução sem usuário root
+- Otimização do tamanho da imagem Docker
 
-## Como Executar na Azure
+---
 
+# Docker Compose
+
+O Docker Compose é responsável por orquestrar os containers da aplicação e do banco Oracle.
+
+Containers utilizados:
+
+- API Spring Boot
+- Oracle Database XE
+
+Recursos implementados:
+
+- Volume nomeado para persistência
+- Healthcheck do banco Oracle
+- Comunicação interna entre containers
+- Variáveis de ambiente para conexão com banco
+
+---
+
+# Azure CLI
+
+O provisionamento da infraestrutura foi automatizado utilizando Azure CLI através de script Bash.
+
+O script realiza automaticamente:
+
+- Criação do Resource Group
+- Criação da Máquina Virtual Linux
+- Abertura da porta 8080
+- Instalação do Docker
+- Instalação do Git e Nano
+- Clone do repositório
+- Execução do Docker Compose
+- Deploy automatizado da aplicação
+
+---
+
+# Como Executar Localmente
+
+## Clonar o repositório
+
+```bash
+git clone https://github.com/ChupinVet/DevOpsChallenge.git
+```
+
+## Entrar no diretório
+
+```bash
+cd DevOpsChallenge
+```
+
+## Subir os containers
+
+```bash
+docker compose up -d
+```
+
+## Acessar a aplicação
+
+```text
+http://localhost:8080
+```
+
+## Swagger
+
+```text
+http://localhost:8080/swagger-ui.html
+```
+
+---
+
+# Como Executar na Azure
+### Lembre-se de alterar os valores de LOCATION e SIZE no script de acordo com disponibilidade, preferências e políticas da sua conta AZURE!
+
+## Clonar o repositório
+
+```bash
+git clone https://github.com/ChupinVet/DevOpsChallenge.git
+```
+
+## Entrar no diretório
+
+```bash
+cd DevOpsChallenge
+```
+
+## Realizar login na Azure CLI
+
+```bash
+az login
+```
+
+## Executar script de provisionamento
+```bash
+./azure/criar-infra.sh
+```
+
+O script irá:
+
+- Provisionar a infraestrutura na Azure
+- Instalar Docker automaticamente
+- Clonar o repositório
+- Executar os containers
+- Disponibilizar a API publicamente
+
+---
 
 #  Disciplina
 
