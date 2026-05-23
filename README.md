@@ -1,6 +1,14 @@
 #  Descrição do projeto
 
+O ChupinVet é uma plataforma desenvolvida para melhorar a experiência entre responsáveis de animais e profissionais veterinários, oferecendo um ambiente centralizado para organização das informações relacionadas à saúde dos pets.
 
+O projeto surgiu a partir da percepção de dificuldades comuns no mercado veterinário, como a falta de acompanhamento preventivo dos animais, dificuldades na organização das consultas e ausência de um local único para gerenciamento das informações clínicas.
+
+A proposta da plataforma é facilitar a comunicação entre responsáveis e veterinários, permitindo o gerenciamento de pets, consultas e informações importantes de forma mais prática.
+
+Além disso, o projeto busca incentivar o cuidado preventivo da saúde animal e proporcionar uma experiência mais eficiente tanto para os responsáveis quanto para os profissionais veterinários.
+
+Como diferencial futuro, a plataforma prevê integração com Inteligência Artificial para geração de resumos inteligentes das consultas veterinárias e auxílio no entendimento das orientações passadas durante os atendimentos.
 
 ---
 
