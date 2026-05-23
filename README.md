@@ -124,8 +124,6 @@ Containers utilizados:
 Recursos implementados:
 
 - Volume nomeado para persistência
-- Healthcheck do banco Oracle
-- Comunicação interna entre containers
 - Variáveis de ambiente para conexão com banco
 
 ---
