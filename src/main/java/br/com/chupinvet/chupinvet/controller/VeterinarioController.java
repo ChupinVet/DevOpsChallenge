@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -26,11 +27,12 @@ public class VeterinarioController {
     @PostMapping
     @Operation(
             summary = "Cadastrar veterinário",
-            description = "Cadastra um novo veterinário no sistema"
+            description = "Cadastra um novo veterinário no sistema (signup)"
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Veterinário cadastrado com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+            @ApiResponse(responseCode = "400", description = "Dados inválidos"),
+            @ApiResponse(responseCode = "409", description = "E-mail ou CPF já cadastrado")
     })
     public ResponseEntity<VeterinarioResponseDTO> cadastrar(
             @RequestBody @Valid VeterinarioRequestDTO dto
@@ -97,6 +99,7 @@ public class VeterinarioController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('VETERINARIO')")
     @Operation(
             summary = "Atualizar veterinário",
             description = "Atualiza os dados de um veterinário existente"
@@ -114,6 +117,7 @@ public class VeterinarioController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('VETERINARIO')")
     @Operation(
             summary = "Deletar veterinário",
             description = "Remove um veterinário do sistema pelo ID informado"

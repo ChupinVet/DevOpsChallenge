@@ -1,6 +1,7 @@
 package br.com.chupinvet.chupinvet.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
@@ -13,14 +14,15 @@ public record VeterinarioRequestDTO(
         @Size(max = 100)
         String nomeUsuario,
 
-        @Schema(description = "E-mail do veterinário", example = "carlos@vet.com")
+        @Schema(description = "E-mail do veterinário, usado como login", example = "carlos@vet.com")
         @NotBlank
+        @Email
         @Size(max = 150)
         String email,
 
-        @Schema(description = "Senha de acesso", example = "123456")
+        @Schema(description = "Senha de acesso (será armazenada com hash)", example = "senhaForte123")
         @NotBlank
-        @Size(max = 100)
+        @Size(min = 6, max = 100)
         String senha,
 
         @Schema(description = "CPF com 11 dígitos", example = "12345678901")
@@ -29,12 +31,10 @@ public record VeterinarioRequestDTO(
         String cpf,
 
         @Schema(description = "Estado do veterinário", example = "SP")
-        @NotBlank
         @Size(max = 50)
         String estado,
 
         @Schema(description = "Cidade do veterinário", example = "Campinas")
-        @NotBlank
         @Size(max = 80)
         String cidade,
 
@@ -58,14 +58,20 @@ public record VeterinarioRequestDTO(
         Integer anosExperiencia,
 
         @Schema(description = "Disponibilidade de atendimento", example = "Segunda a Sexta")
-        @NotBlank
         @Size(max = 100)
         String disponibilidade,
 
         @Schema(description = "Tipo de serviço prestado", example = "Consulta")
-        @NotBlank
         @Size(max = 100)
-        String tipoServico
+        String tipoServico,
+
+        @Schema(description = "Nome da clínica onde atende", example = "Clínica Pet Amigo")
+        @Size(max = 100)
+        String nomeClinica,
+
+        @Schema(description = "Biografia/descrição profissional")
+        @Size(max = 500)
+        String bio
 
 ) {
 }

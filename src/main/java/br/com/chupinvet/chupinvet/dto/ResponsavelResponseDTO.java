@@ -7,7 +7,10 @@ import java.time.LocalDate;
 @Schema(description = "Dados retornados de um responsável")
 public record ResponsavelResponseDTO(
 
-        @Schema(example = "1")
+        @Schema(description = "ID do responsável (usar este para vincular pets)", example = "1")
+        Long idResponsavel,
+
+        @Schema(description = "ID do usuário (identidade base)", example = "1")
         Long idUsuario,
 
         @Schema(example = "João Silva")

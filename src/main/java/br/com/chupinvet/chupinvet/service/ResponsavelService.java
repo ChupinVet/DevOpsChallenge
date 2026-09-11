@@ -5,11 +5,18 @@ import br.com.chupinvet.chupinvet.dto.ResponsavelResponseDTO;
 import br.com.chupinvet.chupinvet.exception.DadoDuplicadoException;
 import br.com.chupinvet.chupinvet.exception.RecursoNaoEncontradoException;
 import br.com.chupinvet.chupinvet.model.Responsavel;
+import br.com.chupinvet.chupinvet.model.Usuario;
 import br.com.chupinvet.chupinvet.repository.ResponsavelRepository;
+import br.com.chupinvet.chupinvet.repository.UsuarioRepository;
+import br.com.chupinvet.chupinvet.security.SecurityUtils;
+import br.com.chupinvet.chupinvet.security.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 
 @Service
 public class ResponsavelService {
@@ -17,87 +24,69 @@ public class ResponsavelService {
     @Autowired
     private ResponsavelRepository responsavelRepository;
 
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Transactional
     public ResponsavelResponseDTO cadastrar(ResponsavelRequestDTO dto) {
-        if (responsavelRepository.findByEmail(dto.email()).isPresent()) {
-            throw new DadoDuplicadoException("E-mail já cadastrado");
-        }
+        validarDuplicidade(dto.email(), dto.cpf(), null);
 
-        if (responsavelRepository.findByCpf(dto.cpf()).isPresent()) {
-            throw new DadoDuplicadoException("CPF já cadastrado");
-        }
+        Usuario usuario = new Usuario();
+        usuario.setNomeUsuario(dto.nomeUsuario());
+        usuario.setEmail(dto.email());
+        usuario.setSenha(passwordEncoder.encode(dto.senha()));
+        usuario.setCpf(dto.cpf());
+        usuario.setEstado(dto.estado());
+        usuario.setCidade(dto.cidade());
+        usuario.setTelefone(dto.telefone());
+        usuario = usuarioRepository.save(usuario);
+
         Responsavel responsavel = new Responsavel();
-
-        responsavel.setNomeUsuario(dto.nomeUsuario());
-        responsavel.setEmail(dto.email());
-        responsavel.setSenha(dto.senha());
-        responsavel.setCpf(dto.cpf());
-        responsavel.setEstado(dto.estado());
-        responsavel.setCidade(dto.cidade());
-        responsavel.setTelefone(dto.telefone());
+        responsavel.setUsuario(usuario);
         responsavel.setDataNascimento(dto.dataNascimento());
         responsavel.setGenero(dto.genero());
         responsavel.setTipoResidencia(dto.tipoResidencia());
         responsavel.setTelefoneSecundario(dto.telefoneSecundario());
 
         Responsavel responsavelSalvo = responsavelRepository.save(responsavel);
-
         return toResponseDTO(responsavelSalvo);
     }
 
+    @Transactional(readOnly = true)
     public Page<ResponsavelResponseDTO> listar(Pageable pageable) {
-        return responsavelRepository
-                .findAll(pageable)
+        return responsavelRepository.findAll(pageable)
                 .map(this::toResponseDTO);
     }
 
+    @Transactional(readOnly = true)
     public ResponsavelResponseDTO buscarPorId(Long id) {
-        Responsavel responsavel = responsavelRepository
-                .findById(id)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Responsável não encontrado"));
+        Responsavel responsavel = buscarOuFalhar(id);
 
+        UserDetailsImpl usuarioLogado = SecurityUtils.getUsuarioLogado();
+        if (usuarioLogado.isResponsavel()) {
+            SecurityUtils.validarPosseResponsavel(id);
+        }
         return toResponseDTO(responsavel);
     }
 
-    private ResponsavelResponseDTO toResponseDTO(Responsavel responsavel) {
-        return new ResponsavelResponseDTO(
-                responsavel.getIdUsuario(),
-                responsavel.getNomeUsuario(),
-                responsavel.getEmail(),
-                responsavel.getCpf(),
-                responsavel.getEstado(),
-                responsavel.getCidade(),
-                responsavel.getTelefone(),
-                responsavel.getDataNascimento(),
-                responsavel.getGenero(),
-                responsavel.getTipoResidencia(),
-                responsavel.getTelefoneSecundario()
-        );
-    }
+    @Transactional
     public ResponsavelResponseDTO atualizar(Long id, ResponsavelRequestDTO dto) {
-        responsavelRepository.findByEmail(dto.email())
-                .ifPresent(responsavelExistente -> {
-                    if (!responsavelExistente.getIdUsuario().equals(id)) {
-                        throw new DadoDuplicadoException("E-mail já cadastrado");
-                    }
-                });
+        SecurityUtils.validarPosseResponsavel(id);
+        Responsavel responsavel = buscarOuFalhar(id);
+        validarDuplicidade(dto.email(), dto.cpf(), responsavel.getUsuario().getIdUsuario());
 
-        responsavelRepository.findByCpf(dto.cpf())
-                .ifPresent(responsavelExistente -> {
-                    if (!responsavelExistente.getIdUsuario().equals(id)) {
-                        throw new DadoDuplicadoException("CPF já cadastrado");
-                    }
-                });
-        Responsavel responsavel = responsavelRepository
-                .findById(id)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Responsável não encontrado"));
+        Usuario usuario = responsavel.getUsuario();
+        usuario.setNomeUsuario(dto.nomeUsuario());
+        usuario.setEmail(dto.email());
+        usuario.setSenha(passwordEncoder.encode(dto.senha()));
+        usuario.setCpf(dto.cpf());
+        usuario.setEstado(dto.estado());
+        usuario.setCidade(dto.cidade());
+        usuario.setTelefone(dto.telefone());
 
-        responsavel.setNomeUsuario(dto.nomeUsuario());
-        responsavel.setEmail(dto.email());
-        responsavel.setSenha(dto.senha());
-        responsavel.setCpf(dto.cpf());
-        responsavel.setEstado(dto.estado());
-        responsavel.setCidade(dto.cidade());
-        responsavel.setTelefone(dto.telefone());
         responsavel.setDataNascimento(dto.dataNascimento());
         responsavel.setGenero(dto.genero());
         responsavel.setTipoResidencia(dto.tipoResidencia());
@@ -106,9 +95,51 @@ public class ResponsavelService {
         Responsavel responsavelAtualizado = responsavelRepository.save(responsavel);
         return toResponseDTO(responsavelAtualizado);
     }
+
+    @Transactional
     public void deletar(Long id) {
-        Responsavel responsavel = responsavelRepository.findById(id)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Responsável não encontrado"));
+        SecurityUtils.validarPosseResponsavel(id);
+        Responsavel responsavel = buscarOuFalhar(id);
+        Usuario usuario = responsavel.getUsuario();
+        // Deleta o filho antes do pai por causa da FK (Responsavel referencia Usuario)
         responsavelRepository.delete(responsavel);
+        usuarioRepository.delete(usuario);
+    }
+
+    private Responsavel buscarOuFalhar(Long id) {
+        return responsavelRepository.findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Responsável não encontrado"));
+    }
+
+
+    private void validarDuplicidade(String email, String cpf, Long idUsuarioAtual) {
+        usuarioRepository.findByEmailIgnoreCase(email).ifPresent(usuarioExistente -> {
+            if (!usuarioExistente.getIdUsuario().equals(idUsuarioAtual)) {
+                throw new DadoDuplicadoException("E-mail já cadastrado");
+            }
+        });
+        usuarioRepository.findByCpf(cpf).ifPresent(usuarioExistente -> {
+            if (!usuarioExistente.getIdUsuario().equals(idUsuarioAtual)) {
+                throw new DadoDuplicadoException("CPF já cadastrado");
+            }
+        });
+    }
+
+    private ResponsavelResponseDTO toResponseDTO(Responsavel responsavel) {
+        Usuario usuario = responsavel.getUsuario();
+        return new ResponsavelResponseDTO(
+                responsavel.getIdResponsavel(),
+                usuario.getIdUsuario(),
+                usuario.getNomeUsuario(),
+                usuario.getEmail(),
+                usuario.getCpf(),
+                usuario.getEstado(),
+                usuario.getCidade(),
+                usuario.getTelefone(),
+                responsavel.getDataNascimento(),
+                responsavel.getGenero(),
+                responsavel.getTipoResidencia(),
+                responsavel.getTelefoneSecundario()
+        );
     }
 }

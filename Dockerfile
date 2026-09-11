@@ -1,4 +1,4 @@
-FROM maven:3-eclipse-temurin-21 AS build
+FROM maven:3-eclipse-temurin-25 AS build
 
 WORKDIR /opt/app
 
@@ -23,7 +23,9 @@ RUN jlink \
     --no-man-pages \
     --output /customjre
 
-FROM gcr.io/distroless/base-debian12:nonroot
+FROM alpine:3.21
+
+RUN addgroup -S chupingroup && adduser -S chupinuser -G chupingroup
 
 WORKDIR /app
 
@@ -34,5 +36,7 @@ ENV JAVA_HOME=/opt/jre
 ENV PATH="/opt/jre/bin:${PATH}"
 
 EXPOSE 8080
+
+USER chupinuser
 
 ENTRYPOINT ["java", "-jar", "app.jar"]

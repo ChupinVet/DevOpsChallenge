@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -26,11 +27,12 @@ public class ResponsavelController {
     @PostMapping
     @Operation(
             summary = "Cadastrar responsável",
-            description = "Cadastra um novo responsável no sistema"
+            description = "Cadastra um novo responsável no sistema (signup)"
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Responsável cadastrado com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+            @ApiResponse(responseCode = "400", description = "Dados inválidos"),
+            @ApiResponse(responseCode = "409", description = "E-mail ou CPF já cadastrado")
     })
     public ResponseEntity<ResponsavelResponseDTO> cadastrar(
             @RequestBody @Valid ResponsavelRequestDTO dto
@@ -42,6 +44,7 @@ public class ResponsavelController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('VETERINARIO')")
     @Operation(
             summary = "Listar responsáveis",
             description = "Retorna uma lista paginada de responsáveis cadastrados"
@@ -54,6 +57,7 @@ public class ResponsavelController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('VETERINARIO') or hasRole('RESPONSAVEL')")
     @Operation(
             summary = "Buscar responsável por ID",
             description = "Retorna um responsável específico baseado no ID informado"
@@ -67,6 +71,7 @@ public class ResponsavelController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('RESPONSAVEL')")
     @Operation(
             summary = "Atualizar responsável",
             description = "Atualiza os dados de um responsável existente"
@@ -80,12 +85,11 @@ public class ResponsavelController {
             @PathVariable Long id,
             @RequestBody @Valid ResponsavelRequestDTO dto
     ) {
-        return ResponseEntity.ok(
-                responsavelService.atualizar(id, dto)
-        );
+        return ResponseEntity.ok(responsavelService.atualizar(id, dto));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('RESPONSAVEL')")
     @Operation(
             summary = "Deletar responsável",
             description = "Remove um responsável do sistema pelo ID informado"

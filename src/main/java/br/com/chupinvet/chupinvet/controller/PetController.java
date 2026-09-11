@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -24,6 +25,7 @@ public class PetController {
     private PetService petService;
 
     @PostMapping
+    @PreAuthorize("hasRole('RESPONSAVEL')")
     @Operation(
             summary = "Cadastrar pet",
             description = "Cadastra um novo pet no sistema"
@@ -50,7 +52,6 @@ public class PetController {
             @ApiResponse(responseCode = "200", description = "Lista de pets retornada com sucesso")
     })
     public ResponseEntity<Page<PetResponseDTO>> listar(Pageable pageable) {
-
         return ResponseEntity.ok(petService.listar(pageable));
     }
 
@@ -79,9 +80,7 @@ public class PetController {
             @RequestParam String nomePet,
             Pageable pageable
     ) {
-        return ResponseEntity.ok(
-                petService.buscarPorNome(nomePet, pageable)
-        );
+        return ResponseEntity.ok(petService.buscarPorNome(nomePet, pageable));
     }
 
     @GetMapping("/especie")
@@ -96,9 +95,7 @@ public class PetController {
             @RequestParam String especie,
             Pageable pageable
     ) {
-        return ResponseEntity.ok(
-                petService.buscarPorEspecie(especie, pageable)
-        );
+        return ResponseEntity.ok(petService.buscarPorEspecie(especie, pageable));
     }
 
     @GetMapping("/raca")
@@ -117,6 +114,7 @@ public class PetController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('RESPONSAVEL')")
     @Operation(
             summary = "Atualizar pet",
             description = "Atualiza os dados de um pet existente"
@@ -130,13 +128,11 @@ public class PetController {
             @PathVariable Long id,
             @RequestBody @Valid PetRequestDTO dto
     ) {
-
-        return ResponseEntity.ok(
-                petService.atualizar(id, dto)
-        );
+        return ResponseEntity.ok(petService.atualizar(id, dto));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('RESPONSAVEL')")
     @Operation(
             summary = "Deletar pet",
             description = "Remove um pet do sistema pelo ID informado"

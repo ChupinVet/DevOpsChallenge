@@ -5,7 +5,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @Schema(description = "Dados retornados de um veterinário")
 public record VeterinarioResponseDTO(
 
-        @Schema(example = "1")
+        @Schema(description = "ID do veterinário", example = "1")
+        Long idVeterinario,
+
+        @Schema(description = "ID do usuário (identidade base)", example = "1")
         Long idUsuario,
 
         @Schema(example = "Carlos Mendes")
@@ -39,7 +42,13 @@ public record VeterinarioResponseDTO(
         String disponibilidade,
 
         @Schema(example = "Consulta")
-        String tipoServico
+        String tipoServico,
+
+        @Schema(example = "Clínica Pet Amigo")
+        String nomeClinica,
+
+        @Schema(description = "Biografia/descrição profissional")
+        String bio
 
 ) {
 }
