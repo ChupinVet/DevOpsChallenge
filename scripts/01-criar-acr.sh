@@ -12,7 +12,7 @@ az group create \
   --location "$LOCATION" \
   --output none
 
-echo "==> Registrando provider Microsoft.ContainerRegistry (idempotente) <=="
+echo "==> Registrando provider Microsoft.ContainerRegistry <=="
 az provider register --namespace Microsoft.ContainerRegistry --wait
 
 echo "==> Criando o Azure Container Registry ${ACR_NAME} <=="
@@ -50,5 +50,3 @@ echo "Username:     $ADMIN_USERNAME"
 echo "Password:     $ADMIN_PASSWORD"
 echo ""
 echo "Guarde esses três valores para autenticar o Docker localmente"
-echo "(próximo passo: 02-publicar-imagens.sh, rodado na sua máquina)."
-echo "Não cole a senha em nenhum arquivo do repositório."

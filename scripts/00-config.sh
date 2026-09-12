@@ -38,6 +38,6 @@ API_CONTAINER_GROUP="aci-chupinvet-api-${SUFFIXO}"
 ORACLE_PORT="1521"
 API_PORT="8080"
 
-# --- Banco (nomes e não segredos. A senha/usuário do app ficam no Key Vault)
+#Banco (nomes e não segredos. A senha/usuário do app ficam no Key Vault)
 ORACLE_APP_USER="chupinvet"
 ORACLE_PDB_NAME="XEPDB1"
