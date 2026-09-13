@@ -1,18 +1,3 @@
-# Desliga o AIO nativo do InnoDB E evita O_DIRECT.
-#
-# Motivo: o volume de dados do MySQL fica montado num Azure Files (SMB),
-# que não suporta as operações de I/O que o InnoDB usa por padrão no
-# Linux. Sem isso, o MySQL falha na inicialização com:
-#   [InnoDB] Write to file ./ibdata1 failed... Error number 22 means
-#   'Invalid argument'
-#
-# innodb_use_native_aio=0  -> desliga o io_uring/libaio assíncrono
-# innodb_flush_method=fsync -> evita O_DIRECT, que exige alinhamento de
-#   offset/buffer que o CIFS não garante da mesma forma que um disco local
-#   (é essa a causa mais provável do erro 22 especificamente no offset 0)
-#
-# Custo: um pouco de performance de I/O — irrelevante para o volume de
-# dados deste projeto (poucas tabelas, poucas linhas).
 [mysqld]
 innodb_use_native_aio=0
 innodb_flush_method=fsync

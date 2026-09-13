@@ -40,7 +40,6 @@ focada em containerizar a API e o banco de dados e implantá-los na nuvem usando
 
 - **Histórico centralizado**: todo o acompanhamento de saúde do pet (diário de comportamento, alimentação, peso) 
 fica num só lugar, acessível tanto pelo responsável quanto pelo veterinário e acaba com a perda de informação entre consultas.
-- **Comunicação mais direta** entre responsável e veterinário, reduzindo retrabalho administrativo de cadastro e busca de informações.
 - **Disponibilidade e escalabilidade na nuvem**: rodando em containers no Azure, a solução não depende de infraestrutura própria e pode ser replicada/escalada conforme a demanda.
 - **Custo sob controle**: Azure Container Instances cobra por segundo de uso (Pay-as-you-go),não há custo de infraestrutura ociosa como haveria numa VM ligada o tempo todo.
 - **Segurança de credenciais**: senhas e segredos de conexão ficam no Azure Key Vault, nunca no código-fonte (que é público).
@@ -153,7 +152,7 @@ Multi-stage build com `jlink`, gerando um runtime Java customizado e enxuto:
 O `compose.yml` usa as **mesmas imagens publicadas** que o deploy na nuvem (nenhuma build local), 
 garantindo que o comportamento local seja idêntico ao que roda no ACI:
 
-- `mysql`: `docker.io/vitordalmagro/chupinvet-mysql:v1`  imagem customizada (ver seção "Imagem customizada do MySQL" abaixo).
+- `mysql`: `docker.io/vitordalmagro/chupinvet-mysql:v1`  imagem customizada.
 - `app`: `docker.io/vitordalmagro/chupinvet-api:mysql-v1`.
 
 Variáveis sensíveis (`JWT_SECRET`) ficam com valor fixo só para uso local em produção (ACI), vêm do Key Vault.
