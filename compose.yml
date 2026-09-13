@@ -1,28 +1,36 @@
 services:
-  oracle:
-    image: gvenzl/oracle-xe:21-slim
-    container_name: oracle-chupinvet
+  mysql:
+    image: docker.io/vitordalmagro/chupinvet-mysql:v1
+    container_name: mysql-chupinvet
     environment:
-      ORACLE_PASSWORD: oracle
-      APP_USER: chupinvet
-      APP_USER_PASSWORD: chupinvet
+      MYSQL_ROOT_PASSWORD: rootsenha
+      MYSQL_DATABASE: chupinvet
+      MYSQL_USER: chupinvet
+      MYSQL_PASSWORD: chupinvet
     ports:
-      - "1521:1521"
+      - "3306:3306"
     volumes:
-      - oracle_data:/opt/oracle/oradataf
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 20s
+      retries: 10
 
   app:
-    image: docker.io/vitordalmagro/chupinvet-api:jlink-v1
+    image: docker.io/vitordalmagro/chupinvet-api:mysql-v1
     container_name: chupinvet-api
     depends_on:
-      - oracle
+      mysql:
+        condition: service_healthy
     restart: on-failure
     ports:
       - "8080:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:oracle:thin:@oracle:1521/XEPDB1
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/chupinvet
       SPRING_DATASOURCE_USERNAME: chupinvet
       SPRING_DATASOURCE_PASSWORD: chupinvet
+      JWT_SECRET: qualquercoisaaquiparatestarlocalkkkkk1234567890
 
 volumes:
-  oracle_data:
+  mysql_data:

@@ -10,7 +10,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-
 // Representa um responsável por pets.
 
 @Entity
@@ -27,8 +26,7 @@ import java.util.List;
 public class Responsavel {
 
     @Id
-    @SequenceGenerator(name = "responsavel_seq", sequenceName = "seq_responsavel", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "responsavel_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_responsavel")
     @Schema(
             description = "ID único do responsável",

@@ -28,8 +28,7 @@ import lombok.*;
 public class Veterinario {
 
     @Id
-    @SequenceGenerator(name = "veterinario_seq", sequenceName = "seq_veterinario", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "veterinario_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_veterinario")
     @Schema(
             description = "ID único do veterinário",

@@ -17,26 +17,33 @@ az keyvault create \
   --enable-rbac-authorization true \
   --output none
 
-echo "==> Concedendo a role de Key Vault ADM"
+echo "==> Concedendo a role de Key Vault Administrator <=="
 az role assignment create \
   --assignee "$(az account show --query user.name -o tsv)" \
   --role "Key Vault Administrator" \
   --scope "/subscriptions/$(az account show --query id -o tsv)/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.KeyVault/vaults/${KEY_VAULT_NAME}" \
   --output none
 
-# Só gera a senha se o segredo ainda não existir.
-if ! az keyvault secret show --vault-name "$KEY_VAULT_NAME" --name oracle-password --output none 2>/dev/null; then
-  echo "==> Gerando e armazenando a senha do Oracle no Key Vault <=="
-  ORACLE_PASSWORD_GERADA=$(openssl rand -base64 24)
-  az keyvault secret set \
-    --vault-name "$KEY_VAULT_NAME" \
-    --name oracle-password \
-    --value "$ORACLE_PASSWORD_GERADA" \
-    --output none
-else
-  echo "==> Segredo oracle-password já existe, não foi alterado <=="
-fi
+gerar_segredo_se_nao_existir() {
+  local nome_segredo="$1"
+  local tamanho_bytes="$2"
+
+  if ! az keyvault secret show --vault-name "$KEY_VAULT_NAME" --name "$nome_segredo" --output none 2>/dev/null; then
+    echo "==> Gerando e armazenando '${nome_segredo}' no Key Vault <=="
+    local valor_gerado
+    valor_gerado=$(openssl rand -base64 "$tamanho_bytes")
+    az keyvault secret set \
+      --vault-name "$KEY_VAULT_NAME" \
+      --name "$nome_segredo" \
+      --value "$valor_gerado" \
+      --output none
+  else
+    echo "==> Segredo '${nome_segredo}' já existe, não foi alterado <=="
+  fi
+}
+
+gerar_segredo_se_nao_existir db-password 24
+gerar_segredo_se_nao_existir jwt-secret 32
 
 echo ""
 echo "==> Key Vault pronto: ${KEY_VAULT_NAME} <=="
-echo "Segredo 'oracle-password' disponível para o script de deploy."

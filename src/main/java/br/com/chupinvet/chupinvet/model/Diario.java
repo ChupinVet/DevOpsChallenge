@@ -26,8 +26,7 @@ import java.time.LocalDate;
 public class Diario {
 
     @Id
-    @SequenceGenerator(name = "diario_seq", sequenceName = "seq_diario", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "diario_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_diario")
     @Schema(
             description = "ID único do registro de diário",
