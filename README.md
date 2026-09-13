@@ -68,7 +68,7 @@ fica num só lugar, acessível tanto pelo responsável quanto pelo veterinário 
 O banco é **MySQL 8.4** LTS lançado em abril de 2024, containerizado, com uma imagem customizada (pasta `mysql/`). 
 ## Tabelas
 
-O schema tem 5 tabelas (`usuario`, `responsavel`, `veterinario`, `pet`, `diario`). As duas usadas para demonstrar o CRUD completo exigido pelo checkpoint são **`pet`** e **`diario`** (relação N:1, um pet tem vários registros de diário).
+O schema tem 5 tabelas (`usuario`, `responsavel`, `veterinario`, `pet`, `diario`). As duas usadas para demonstrar o CRUD completo exigido são **`pet`** e **`diario`** (relação N:1, um pet tem vários registros de diário).
 
 Ver `script_bd.sql` na raiz do repositório para o DDL completo.
 
@@ -144,7 +144,7 @@ Multi-stage build com `jlink`, gerando um runtime Java customizado e enxuto:
 
 - **Build**: `maven:3-eclipse-temurin-25-alpine` compila e gera, via `jdeps`/`jlink`, um JRE mínimo contendo só os módulos que a aplicação realmente usa.
 - **Runtime**: `alpine:3.21` mesma base do estágio de build, evitando incompatibilidade entre glibc e musl (um JRE gerado em ambiente glibc não roda em Alpine sem essa consistência).
-- **Sem privilégio root**: usuário dedicado `chupinuser`/`chupingroup`, atendendo ao requisito do checkpoint de o container da aplicação nunca rodar como root/admin.
+- **Sem privilégio root**: usuário dedicado `chupinuser`/`chupingroup`, atendendo ao requisito de o container da aplicação nunca rodar como root/admin.
 
 ---
 
