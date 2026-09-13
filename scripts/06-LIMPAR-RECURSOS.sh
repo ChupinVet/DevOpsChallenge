@@ -31,7 +31,7 @@ done
 
 echo "==> Resource Group apagado com sucesso <=="
 echo ""
-echo "==> Purgando o Key Vault ${KEY_VAULT_NAME} <=="
+echo "==> Key Vault Purge ${KEY_VAULT_NAME} <=="
 az keyvault purge \
   --name "$KEY_VAULT_NAME" \
   --location "$LOCATION" \

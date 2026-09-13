@@ -24,6 +24,22 @@ az role assignment create \
   --scope "/subscriptions/$(az account show --query id -o tsv)/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.KeyVault/vaults/${KEY_VAULT_NAME}" \
   --output none
 
+echo "==> Aguardando a propagação da permissão no Key Vault <=="
+TENTATIVAS=10
+for ((i = 1; i <= TENTATIVAS; i++)); do
+  if az keyvault secret list --vault-name "$KEY_VAULT_NAME" --output none 2>/dev/null; then
+    echo "==> Permissão propagada, seguindo em frente <=="
+    break
+  fi
+  if [[ "$i" -eq "$TENTATIVAS" ]]; then
+    echo "==> Ainda sem permissão, algo além da propagação normal pode estar errado."
+    exit 1
+  fi
+  echo "  ainda propagando... (tentativa: ${i}/${TENTATIVAS})"
+  sleep 10
+done
+
+
 gerar_segredo_se_nao_existir() {
   local nome_segredo="$1"
   local tamanho_bytes="$2"
