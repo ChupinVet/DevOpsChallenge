@@ -28,8 +28,7 @@ import java.util.List;
 public class Pet {
 
     @Id
-    @SequenceGenerator(name = "pet_seq", sequenceName = "seq_pet", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pet_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_pet")
     @Schema(
             description = "ID único do pet",

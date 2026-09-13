@@ -6,38 +6,27 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 source "${SCRIPT_DIR}/00-config.sh"
 
+ACR_LOGIN_SERVER=$(az acr show --name "$ACR_NAME" --resource-group "$RESOURCE_GROUP" --query loginServer --output tsv)
 
-if [[ -z "${ACR_LOGIN_SERVER:-}" ]]; then
-  read -r -p "ACR_LOGIN_SERVER (ex.: ${ACR_NAME}.azurecr.io): " ACR_LOGIN_SERVER
-fi
-
-if [[ -z "${ACR_USERNAME:-}" ]]; then
-  read -r -p "ACR_USERNAME: " ACR_USERNAME
-fi
-
-if [[ -z "${ACR_PASSWORD:-}" ]]; then
-  read -r -s -p "ACR_PASSWORD: " ACR_PASSWORD
-  echo ""
-fi
+ACR_USERNAME=$(az acr credential show --name "$ACR_NAME" --resource-group "$RESOURCE_GROUP" --query username --output tsv)
+ACR_PASSWORD=$(az acr credential show --name "$ACR_NAME" --resource-group "$RESOURCE_GROUP" --query "passwords[0].value" --output tsv)
 
 echo "==> Autenticando o Podman no ACR privado <=="
-podman login "$ACR_LOGIN_SERVER" \
-  --username "$ACR_USERNAME" \
-  --password "$ACR_PASSWORD"
+podman login "$ACR_LOGIN_SERVER" --username "$ACR_USERNAME" --password "$ACR_PASSWORD"
 
-echo "==> Baixando as imagens de origem <=="
+echo "==> Baixando as imagens dos repositórios do Docker Hub <=="
 podman pull "$PUBLIC_API_IMAGE"
-podman pull "$PUBLIC_ORACLE_IMAGE"
+podman pull "$PUBLIC_MYSQL_IMAGE"
 
-echo "==> Retagueando para o ACR privado <=="
+echo "==> Retag da API e Banco para o ACR <=="
 podman tag "$PUBLIC_API_IMAGE" "${ACR_LOGIN_SERVER}/${API_REPOSITORY}:${API_TAG}"
-podman tag "$PUBLIC_ORACLE_IMAGE" "${ACR_LOGIN_SERVER}/${ORACLE_REPOSITORY}:${ORACLE_TAG}"
+podman tag "$PUBLIC_MYSQL_IMAGE" "${ACR_LOGIN_SERVER}/${MYSQL_REPOSITORY}:${MYSQL_TAG}"
 
-echo "==> Publicando no ACR privado <=="
+echo "==> Publicando as duas imagens no ACR <=="
 podman push "${ACR_LOGIN_SERVER}/${API_REPOSITORY}:${API_TAG}"
-podman push "${ACR_LOGIN_SERVER}/${ORACLE_REPOSITORY}:${ORACLE_TAG}"
+podman push "${ACR_LOGIN_SERVER}/${MYSQL_REPOSITORY}:${MYSQL_TAG}"
 
 echo ""
 echo "==> Publicado com sucesso <=="
 echo "  ${ACR_LOGIN_SERVER}/${API_REPOSITORY}:${API_TAG}"
-echo "  ${ACR_LOGIN_SERVER}/${ORACLE_REPOSITORY}:${ORACLE_TAG}"
+echo "  ${ACR_LOGIN_SERVER}/${MYSQL_REPOSITORY}:${MYSQL_TAG}"

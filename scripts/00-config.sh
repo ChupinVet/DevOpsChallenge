@@ -1,43 +1,34 @@
 #!/usr/bin/env bash
 
-
-RM_1="rm566052"
-RM_2="rm561507"
-RM_3="rm561190"
-RM_4="rm554794"
-
-# Usando rm para garantir unicidade global dos recursos que exigem isso no Azure
-
 LOCATION="mexicocentral"
-SUFFIXO="rm566052"
+SUFFIXO="566052"
 
 RESOURCE_GROUP="rg-chupinvet-aci-${SUFFIXO}"
 
-#ACR
+# ACR
 ACR_NAME="chupinvetacr${SUFFIXO}"
-PUBLIC_API_IMAGE="docker.io/vitordalmagro/chupinvet-api:v2"
+PUBLIC_API_IMAGE="docker.io/vitordalmagro/chupinvet-api:mysql-v1"
 API_REPOSITORY="chupinvet/api"
 API_TAG="v1"
-ORACLE_REPOSITORY="chupinvet/oracle-xe"
-ORACLE_TAG="21-slim"
-PUBLIC_ORACLE_IMAGE="gvenzl/oracle-xe:21-slim"
 
+# Trocado de Oracle para MySQL, Oracle não funcionou com o volume do Azure Files (erro ORA-03113 no teste isolado).
+MYSQL_REPOSITORY="chupinvet/mysql"
+MYSQL_TAG="8.4"
+PUBLIC_MYSQL_IMAGE="docker.io/vitordalmagro/chupinvet-mysql:v1"
 
-#Storage Account
+# Storage Account (persistência do banco)
 STORAGE_ACCOUNT_NAME="stchupinvet${SUFFIXO}"
-FILE_SHARE_NAME="oracle-data"
-ORACLE_VOLUME_NAME="oracle-chupinvet-volume"
+FILE_SHARE_NAME="mysql-data"
+MYSQL_VOLUME_NAME="mysql-chupinvet-volume"
 
 # Key Vault
 KEY_VAULT_NAME="kv-chupinvet-${SUFFIXO}"
 
-#Containers
-ORACLE_CONTAINER_GROUP="aci-chupinvet-oracle-${SUFFIXO}"
-API_CONTAINER_GROUP="aci-chupinvet-api-${SUFFIXO}"
+CONTAINER_GROUP_NAME="aci-chupinvet-${SUFFIXO}"
 
-ORACLE_PORT="1521"
+MYSQL_PORT="3306"
 API_PORT="8080"
 
-#Banco (nomes e não segredos. A senha/usuário do app ficam no Key Vault)
-ORACLE_APP_USER="chupinvet"
-ORACLE_PDB_NAME="XEPDB1"
+# Banco (nomes e não segredos, a senha de app fica no Key Vault)
+MYSQL_DATABASE="chupinvet"
+MYSQL_APP_USER="chupinvet"
