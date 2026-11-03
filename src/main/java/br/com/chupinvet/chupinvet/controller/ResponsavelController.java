@@ -8,7 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -19,10 +19,10 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/responsaveis")
 @Tag(name = "Responsáveis", description = "Endpoints para gerenciamento de responsáveis")
+@RequiredArgsConstructor
 public class ResponsavelController {
 
-    @Autowired
-    private ResponsavelService responsavelService;
+    private final ResponsavelService responsavelService;
 
     @PostMapping
     @Operation(

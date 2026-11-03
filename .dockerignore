@@ -6,3 +6,5 @@ target
 docs
 azure
 IMAGES
+terraform
+.env

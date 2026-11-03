@@ -1,12 +1,16 @@
+# Ambiente local: constrói as imagens a partir do código deste repositório.
+# Os segredos vêm do arquivo .env (fora do git). Modelo em .env.example.
 services:
   mysql:
-    image: docker.io/vitordalmagro/chupinvet-mysql:v1
+    build:
+      context: .
+      dockerfile: mysql/Dockerfile
     container_name: mysql-chupinvet
     environment:
-      MYSQL_ROOT_PASSWORD: rootsenha
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: chupinvet
       MYSQL_USER: chupinvet
-      MYSQL_PASSWORD: chupinvet
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
       - "3306:3306"
     volumes:
@@ -18,7 +22,7 @@ services:
       retries: 10
 
   app:
-    image: docker.io/vitordalmagro/chupinvet-api:mysql-v1
+    build: .
     container_name: chupinvet-api
     depends_on:
       mysql:
@@ -29,8 +33,8 @@ services:
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/chupinvet
       SPRING_DATASOURCE_USERNAME: chupinvet
-      SPRING_DATASOURCE_PASSWORD: chupinvet
-      JWT_SECRET: qualquercoisaaquiparatestarlocalkkkkk1234567890
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
 
 volumes:
   mysql_data:

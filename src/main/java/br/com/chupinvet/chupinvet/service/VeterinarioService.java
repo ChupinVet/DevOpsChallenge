@@ -2,55 +2,32 @@ package br.com.chupinvet.chupinvet.service;
 
 import br.com.chupinvet.chupinvet.dto.VeterinarioRequestDTO;
 import br.com.chupinvet.chupinvet.dto.VeterinarioResponseDTO;
-import br.com.chupinvet.chupinvet.exception.DadoDuplicadoException;
 import br.com.chupinvet.chupinvet.exception.RecursoNaoEncontradoException;
 import br.com.chupinvet.chupinvet.model.Usuario;
 import br.com.chupinvet.chupinvet.model.Veterinario;
-import br.com.chupinvet.chupinvet.repository.UsuarioRepository;
 import br.com.chupinvet.chupinvet.repository.VeterinarioRepository;
 import br.com.chupinvet.chupinvet.security.SecurityUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class VeterinarioService {
 
-    @Autowired
-    private VeterinarioRepository veterinarioRepository;
+    private final VeterinarioRepository veterinarioRepository;
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final UsuarioService usuarioService;
 
     @Transactional
     public VeterinarioResponseDTO cadastrar(VeterinarioRequestDTO dto) {
-        validarDuplicidade(dto.email(), dto.cpf(), null);
-
-        Usuario usuario = new Usuario();
-        usuario.setNomeUsuario(dto.nomeUsuario());
-        usuario.setEmail(dto.email());
-        usuario.setSenha(passwordEncoder.encode(dto.senha()));
-        usuario.setCpf(dto.cpf());
-        usuario.setEstado(dto.estado());
-        usuario.setCidade(dto.cidade());
-        usuario.setTelefone(dto.telefone());
-        usuario = usuarioRepository.save(usuario);
+        Usuario usuario = usuarioService.criar(dto);
 
         Veterinario veterinario = new Veterinario();
         veterinario.setUsuario(usuario);
-        veterinario.setCrmv(dto.crmv());
-        veterinario.setEspecialidade(dto.especialidade());
-        veterinario.setAnosExperiencia(dto.anosExperiencia());
-        veterinario.setDisponibilidade(dto.disponibilidade());
-        veterinario.setTipoServico(dto.tipoServico());
-        veterinario.setNomeClinica(dto.nomeClinica());
-        veterinario.setBio(dto.bio());
+        aplicarDados(veterinario, dto);
 
         Veterinario veterinarioSalvo = veterinarioRepository.save(veterinario);
         return toResponseDTO(veterinarioSalvo);
@@ -83,24 +60,9 @@ public class VeterinarioService {
     public VeterinarioResponseDTO atualizar(Long id, VeterinarioRequestDTO dto) {
         SecurityUtils.validarPosseVeterinario(id);
         Veterinario veterinario = buscarOuFalhar(id);
-        validarDuplicidade(dto.email(), dto.cpf(), veterinario.getUsuario().getIdUsuario());
 
-        Usuario usuario = veterinario.getUsuario();
-        usuario.setNomeUsuario(dto.nomeUsuario());
-        usuario.setEmail(dto.email());
-        usuario.setSenha(passwordEncoder.encode(dto.senha()));
-        usuario.setCpf(dto.cpf());
-        usuario.setEstado(dto.estado());
-        usuario.setCidade(dto.cidade());
-        usuario.setTelefone(dto.telefone());
-
-        veterinario.setCrmv(dto.crmv());
-        veterinario.setEspecialidade(dto.especialidade());
-        veterinario.setAnosExperiencia(dto.anosExperiencia());
-        veterinario.setDisponibilidade(dto.disponibilidade());
-        veterinario.setTipoServico(dto.tipoServico());
-        veterinario.setNomeClinica(dto.nomeClinica());
-        veterinario.setBio(dto.bio());
+        usuarioService.atualizar(veterinario.getUsuario(), dto);
+        aplicarDados(veterinario, dto);
 
         Veterinario veterinarioAtualizado = veterinarioRepository.save(veterinario);
         return toResponseDTO(veterinarioAtualizado);
@@ -111,8 +73,9 @@ public class VeterinarioService {
         SecurityUtils.validarPosseVeterinario(id);
         Veterinario veterinario = buscarOuFalhar(id);
         Usuario usuario = veterinario.getUsuario();
+        // Deleta o filho antes do pai por causa da FK (Veterinario referencia Usuario)
         veterinarioRepository.delete(veterinario);
-        usuarioRepository.delete(usuario);
+        usuarioService.deletar(usuario);
     }
 
     private Veterinario buscarOuFalhar(Long id) {
@@ -120,17 +83,14 @@ public class VeterinarioService {
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Veterinário não encontrado"));
     }
 
-    private void validarDuplicidade(String email, String cpf, Long idUsuarioAtual) {
-        usuarioRepository.findByEmailIgnoreCase(email).ifPresent(usuarioExistente -> {
-            if (!usuarioExistente.getIdUsuario().equals(idUsuarioAtual)) {
-                throw new DadoDuplicadoException("E-mail já cadastrado");
-            }
-        });
-        usuarioRepository.findByCpf(cpf).ifPresent(usuarioExistente -> {
-            if (!usuarioExistente.getIdUsuario().equals(idUsuarioAtual)) {
-                throw new DadoDuplicadoException("CPF já cadastrado");
-            }
-        });
+    private void aplicarDados(Veterinario veterinario, VeterinarioRequestDTO dto) {
+        veterinario.setCrmv(dto.crmv());
+        veterinario.setEspecialidade(dto.especialidade());
+        veterinario.setAnosExperiencia(dto.anosExperiencia());
+        veterinario.setDisponibilidade(dto.disponibilidade());
+        veterinario.setTipoServico(dto.tipoServico());
+        veterinario.setNomeClinica(dto.nomeClinica());
+        veterinario.setBio(dto.bio());
     }
 
     private VeterinarioResponseDTO toResponseDTO(Veterinario veterinario) {

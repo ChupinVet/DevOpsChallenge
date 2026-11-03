@@ -32,9 +32,6 @@ public record DiarioResponseDTO(
         @Schema(example = "28.5")
         BigDecimal pesoRegistrado,
 
-        @Schema(description = "Insight gerado por IA (preenchido em sprint futura, pode vir nulo)")
-        String insightIA,
-
         @Schema(example = "1")
         Long idPet,
 

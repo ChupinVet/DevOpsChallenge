@@ -73,5 +73,5 @@ public record VeterinarioRequestDTO(
         @Size(max = 500)
         String bio
 
-) {
+) implements DadosUsuario {
 }

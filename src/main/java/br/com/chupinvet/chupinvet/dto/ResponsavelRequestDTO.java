@@ -60,5 +60,5 @@ public record ResponsavelRequestDTO(
         @Size(max = 15)
         String telefoneSecundario
 
-) {
+) implements DadosUsuario {
 }

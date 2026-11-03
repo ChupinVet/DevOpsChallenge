@@ -2,54 +2,32 @@ package br.com.chupinvet.chupinvet.service;
 
 import br.com.chupinvet.chupinvet.dto.ResponsavelRequestDTO;
 import br.com.chupinvet.chupinvet.dto.ResponsavelResponseDTO;
-import br.com.chupinvet.chupinvet.exception.DadoDuplicadoException;
 import br.com.chupinvet.chupinvet.exception.RecursoNaoEncontradoException;
 import br.com.chupinvet.chupinvet.model.Responsavel;
 import br.com.chupinvet.chupinvet.model.Usuario;
 import br.com.chupinvet.chupinvet.repository.ResponsavelRepository;
-import br.com.chupinvet.chupinvet.repository.UsuarioRepository;
 import br.com.chupinvet.chupinvet.security.SecurityUtils;
-import br.com.chupinvet.chupinvet.security.UserDetailsImpl;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
 @Service
+@RequiredArgsConstructor
 public class ResponsavelService {
 
-    @Autowired
-    private ResponsavelRepository responsavelRepository;
+    private final ResponsavelRepository responsavelRepository;
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final UsuarioService usuarioService;
 
     @Transactional
     public ResponsavelResponseDTO cadastrar(ResponsavelRequestDTO dto) {
-        validarDuplicidade(dto.email(), dto.cpf(), null);
-
-        Usuario usuario = new Usuario();
-        usuario.setNomeUsuario(dto.nomeUsuario());
-        usuario.setEmail(dto.email());
-        usuario.setSenha(passwordEncoder.encode(dto.senha()));
-        usuario.setCpf(dto.cpf());
-        usuario.setEstado(dto.estado());
-        usuario.setCidade(dto.cidade());
-        usuario.setTelefone(dto.telefone());
-        usuario = usuarioRepository.save(usuario);
+        Usuario usuario = usuarioService.criar(dto);
 
         Responsavel responsavel = new Responsavel();
         responsavel.setUsuario(usuario);
-        responsavel.setDataNascimento(dto.dataNascimento());
-        responsavel.setGenero(dto.genero());
-        responsavel.setTipoResidencia(dto.tipoResidencia());
-        responsavel.setTelefoneSecundario(dto.telefoneSecundario());
+        aplicarDados(responsavel, dto);
 
         Responsavel responsavelSalvo = responsavelRepository.save(responsavel);
         return toResponseDTO(responsavelSalvo);
@@ -64,11 +42,7 @@ public class ResponsavelService {
     @Transactional(readOnly = true)
     public ResponsavelResponseDTO buscarPorId(Long id) {
         Responsavel responsavel = buscarOuFalhar(id);
-
-        UserDetailsImpl usuarioLogado = SecurityUtils.getUsuarioLogado();
-        if (usuarioLogado.isResponsavel()) {
-            SecurityUtils.validarPosseResponsavel(id);
-        }
+        SecurityUtils.validarAcessoLeitura(id);
         return toResponseDTO(responsavel);
     }
 
@@ -76,21 +50,9 @@ public class ResponsavelService {
     public ResponsavelResponseDTO atualizar(Long id, ResponsavelRequestDTO dto) {
         SecurityUtils.validarPosseResponsavel(id);
         Responsavel responsavel = buscarOuFalhar(id);
-        validarDuplicidade(dto.email(), dto.cpf(), responsavel.getUsuario().getIdUsuario());
 
-        Usuario usuario = responsavel.getUsuario();
-        usuario.setNomeUsuario(dto.nomeUsuario());
-        usuario.setEmail(dto.email());
-        usuario.setSenha(passwordEncoder.encode(dto.senha()));
-        usuario.setCpf(dto.cpf());
-        usuario.setEstado(dto.estado());
-        usuario.setCidade(dto.cidade());
-        usuario.setTelefone(dto.telefone());
-
-        responsavel.setDataNascimento(dto.dataNascimento());
-        responsavel.setGenero(dto.genero());
-        responsavel.setTipoResidencia(dto.tipoResidencia());
-        responsavel.setTelefoneSecundario(dto.telefoneSecundario());
+        usuarioService.atualizar(responsavel.getUsuario(), dto);
+        aplicarDados(responsavel, dto);
 
         Responsavel responsavelAtualizado = responsavelRepository.save(responsavel);
         return toResponseDTO(responsavelAtualizado);
@@ -103,7 +65,7 @@ public class ResponsavelService {
         Usuario usuario = responsavel.getUsuario();
         // Deleta o filho antes do pai por causa da FK (Responsavel referencia Usuario)
         responsavelRepository.delete(responsavel);
-        usuarioRepository.delete(usuario);
+        usuarioService.deletar(usuario);
     }
 
     private Responsavel buscarOuFalhar(Long id) {
@@ -111,18 +73,11 @@ public class ResponsavelService {
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Responsável não encontrado"));
     }
 
-
-    private void validarDuplicidade(String email, String cpf, Long idUsuarioAtual) {
-        usuarioRepository.findByEmailIgnoreCase(email).ifPresent(usuarioExistente -> {
-            if (!usuarioExistente.getIdUsuario().equals(idUsuarioAtual)) {
-                throw new DadoDuplicadoException("E-mail já cadastrado");
-            }
-        });
-        usuarioRepository.findByCpf(cpf).ifPresent(usuarioExistente -> {
-            if (!usuarioExistente.getIdUsuario().equals(idUsuarioAtual)) {
-                throw new DadoDuplicadoException("CPF já cadastrado");
-            }
-        });
+    private void aplicarDados(Responsavel responsavel, ResponsavelRequestDTO dto) {
+        responsavel.setDataNascimento(dto.dataNascimento());
+        responsavel.setGenero(dto.genero());
+        responsavel.setTipoResidencia(dto.tipoResidencia());
+        responsavel.setTelefoneSecundario(dto.telefoneSecundario());
     }
 
     private ResponsavelResponseDTO toResponseDTO(Responsavel responsavel) {
