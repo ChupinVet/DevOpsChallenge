@@ -94,7 +94,6 @@ CREATE TABLE diario (
     ds_sintomas          VARCHAR(500) COMMENT 'Sintomas observados, se houver',
     ds_observacoes       VARCHAR(500) COMMENT 'Observações gerais do responsável',
     vl_peso_registrado   DECIMAL(5,2) COMMENT 'Peso do pet no momento do registro',
-    ds_insight_ia        VARCHAR(500) COMMENT 'Insight gerado por IA (preenchido em sprint futura)',
     pet_id_pet           BIGINT NOT NULL COMMENT 'FK para pet (N:1)',
     CONSTRAINT fk_diario_pet
         FOREIGN KEY (pet_id_pet) REFERENCES pet (id_pet)

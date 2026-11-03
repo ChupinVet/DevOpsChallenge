@@ -78,13 +78,6 @@ public class Diario {
     @Schema(description = "Peso do pet no momento do registro (kg)", example = "28.5")
     private BigDecimal pesoRegistrado;
 
-    @Size(max = 500)
-    @Column(name = "ds_insight_ia", length = 500)
-    @Schema(
-            description = "Insight gerado automaticamente pela regra de negócio (ex.: alerta de variação de peso)",
-            accessMode = Schema.AccessMode.READ_ONLY
-    )
-    private String insightIA;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
