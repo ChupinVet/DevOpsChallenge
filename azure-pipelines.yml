@@ -1,0 +1,114 @@
+# Pipeline CI/CD do ChupinVet (Sprint 4 - DevOps Tools & Cloud Computing)
+# CI: testes + artefato .jar + imagem no ACR | CD: deploy da imagem no Azure Web App
+
+trigger:
+  branches:
+    include:
+      - master
+  paths:
+    exclude:
+      - terraform/**
+
+pr: none
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  acrServiceConnection: sc-acr-chupinvet
+  azureServiceConnection: sc-azure-chupinvet
+  acrLoginServer: acrchupinvet566052.azurecr.io
+  imageRepository: chupinvet-api
+  webAppName: app-chupinvet-566052
+  MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
+
+stages:
+  #CI
+  - stage: CI
+    displayName: "CI - build, testes e imagem"
+    jobs:
+      - job: build
+        displayName: "Build e testes (Maven)"
+        container: maven:3-eclipse-temurin-25
+        steps:
+          - task: Cache@2
+            displayName: "Cache das dependências do Maven"
+            inputs:
+              key: 'maven | "$(Agent.OS)" | pom.xml'
+              restoreKeys: |
+                maven | "$(Agent.OS)"
+              path: $(MAVEN_CACHE_FOLDER)
+
+          - script: mvn -B clean package -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)
+            displayName: "Compilar e rodar os testes (H2 em memória)"
+
+          - task: PublishTestResults@2
+            displayName: "Publicar resultados dos testes"
+            condition: succeededOrFailed()
+            inputs:
+              testResultsFormat: JUnit
+              testResultsFiles: "**/surefire-reports/TEST-*.xml"
+              testRunTitle: "Testes ChupinVet"
+
+          - task: CopyFiles@2
+            displayName: "Separar o .jar gerado"
+            inputs:
+              SourceFolder: target
+              Contents: "*.jar"
+              TargetFolder: $(Build.ArtifactStagingDirectory)
+
+          - task: PublishPipelineArtifact@1
+            displayName: "Publicar artefato no Azure DevOps"
+            inputs:
+              targetPath: $(Build.ArtifactStagingDirectory)
+              artifact: chupinvet-api-jar
+
+      - job: imagem
+        displayName: "Build e push da imagem para o ACR"
+        dependsOn: build
+        condition: succeeded()
+        steps:
+          - task: Docker@2
+            displayName: "Login no ACR"
+            inputs:
+              command: login
+              containerRegistry: $(acrServiceConnection)
+
+          - task: Docker@2
+            displayName: "Build e push da imagem"
+            inputs:
+              command: buildAndPush
+              repository: $(imageRepository)
+              dockerfile: Dockerfile
+              tags: |
+                $(Build.BuildId)
+                latest
+
+  # CD
+  - stage: CD
+    displayName: "CD - deploy no Azure Web App"
+    dependsOn: CI
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+    # Os segredos só existem nesta etapa (o CI não precisa deles).
+    variables:
+      - group: chupinvet-producao
+    jobs:
+      - deployment: deployWebApp
+        displayName: "Deploy da imagem no Web App"
+        environment: producao
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: none
+                - task: AzureWebAppContainer@1
+                  displayName: "Atualizar o Web App com a nova imagem e as variáveis"
+                  inputs:
+                    azureSubscription: $(azureServiceConnection)
+                    appName: $(webAppName)
+                    containers: $(acrLoginServer)/$(imageRepository):$(Build.BuildId)
+                    appSettings: >-
+                      -SPRING_DATASOURCE_URL "$(SPRING_DATASOURCE_URL)"
+                      -SPRING_DATASOURCE_USERNAME "$(SPRING_DATASOURCE_USERNAME)"
+                      -SPRING_DATASOURCE_PASSWORD "$(SPRING_DATASOURCE_PASSWORD)"
+                      -JWT_SECRET "$(JWT_SECRET)"
