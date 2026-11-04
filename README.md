@@ -95,12 +95,11 @@ terraform init
 terraform plan
 terraform apply
 ```
-Recursos criados no grupo `rg-chupinvet-sprint4` (mexicocentral): ACR, App Service Plan B1, Web App, MySQL Flexible Server, database e regras de firewall.
+O `apply` cria, no grupo `rg-chupinvet-sprint4` (mexicocentral), o ACR, o App Service Plan B1, o Web App, o MySQL Flexible Server, o database e as regras de firewall, e **já carrega o banco**: o recurso `terraform_data.carga_banco` roda o `scripts/carregar-banco.sh`, que executa o `script_bd.sql` (tabelas e dados de exemplo). Se as tabelas já existirem, ele não faz nada.
 
-### 2. Carga do banco
-Da raiz do repositório, no mesmo terminal do `source`:
+### 2. Consultar o banco
 ```bash
-./scripts/carregar-banco.sh       # roda o script_bd.sql no MySQL da nuvem (uma vez só)
+./scripts/conectar-banco.sh "SHOW TABLES;"     # da raiz do repositório
 ```
 O script descobre o endereço do banco pela saída do Terraform e usa o cliente `mysql` de um container temporário, sem instalar nada.
 

@@ -110,3 +110,21 @@ resource "azurerm_mysql_flexible_server_firewall_rule" "meu_ip" {
   start_ip_address    = var.meu_ip
   end_ip_address      = var.meu_ip
 }
+
+
+# Carga inicial do banco
+
+# Depois que o banco e a regra de firewall existem, roda o script_bd.sql na máquina de quem executa o apply. Se as tabelas já existirem, o script não faz nada :) .
+resource "terraform_data" "carga_banco" {
+  depends_on = [
+    azurerm_mysql_flexible_database.chupinvet,
+    azurerm_mysql_flexible_server_firewall_rule.meu_ip,
+  ]
+
+  provisioner "local-exec" {
+    command = "${path.module}/../scripts/carregar-banco.sh"
+    environment = {
+      MYSQL_HOST = azurerm_mysql_flexible_server.mysql.fqdn
+    }
+  }
+}
