@@ -6,9 +6,9 @@ Este repositório é a entrega de **DevOps Tools & Cloud Computing**: a API Java
 
 | | |
 |---|---|
-| **Aplicação** | https://app-chupinvet-566052.azurewebsites.net/swagger-ui.html |
-| **Azure DevOps** | [PLACEHOLDER: link do projeto] |
-| **Vídeo** | [PLACEHOLDER: link do YouTube] |
+| **Aplicação** | Recursos da Azure removidos após a gravação para evitar custos. A execução completa (pipeline, deploy e CRUD) está no vídeo; para recriar tudo, veja [Como reproduzir](#como-reproduzir). |
+| **Azure DevOps** | [Sprint 4 – Azure DevOps](https://dev.azure.com/ChupinVet-DevOps/Sprint%204%20%E2%80%93%20Azure%20DevOps) |
+| **Vídeo** | https://youtu.be/J82EBMD0xTc |
 
 ## Integrantes
 
