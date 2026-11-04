@@ -1,31 +1,16 @@
-# Descrição do projeto
+# ChupinVet API · DevOps (Sprint 4)
 
-O ChupinVet é uma plataforma desenvolvida para melhorar a experiência entre responsáveis de 
-animais e profissionais veterinários, oferecendo um ambiente centralizado para organização das
-informações relacionadas à saúde dos pets.
+O **ChupinVet** é a solução do grupo para o Challenge **CLYVO VET 2026 (FIAP)**. Ele acompanha a saúde do pet de forma contínua: o tutor registra no **diário** como o pet está (humor, alimentação, água, comportamento, sintomas e peso) e o veterinário acompanha esse histórico entre as consultas.
 
-O projeto surgiu a partir da percepção de dificuldades comuns no mercado veterinário, 
-como a falta de acompanhamento preventivo dos animais, 
-dificuldades na organização das consultas e ausência de um local único 
-para gerenciamento das informações clínicas.
+Este repositório é a entrega de **DevOps Tools & Cloud Computing**: a API Java do ChupinVet com **banco MySQL em nuvem (PaaS)** e uma **pipeline CI/CD no Azure DevOps** que testa, gera o artefato, publica a imagem e faz o deploy no **Azure Web App** a cada alteração na branch `master`.
 
-A proposta da plataforma é facilitar a comunicação entre responsáveis e veterinários, 
-permitindo o gerenciamento de pets, consultas e informações importantes de forma mais prática.
+| | |
+|---|---|
+| **Aplicação** | https://app-chupinvet-566052.azurewebsites.net/swagger-ui.html |
+| **Azure DevOps** | [PLACEHOLDER: link do projeto] |
+| **Vídeo** | [PLACEHOLDER: link do YouTube] |
 
-Além disso, o projeto busca incentivar o cuidado preventivo da saúde animal e proporcionar 
-uma experiência mais eficiente tanto para os responsáveis quanto para os profissionais veterinários.
-
-Como diferencial futuro, a plataforma prevê integração com Inteligência Artificial para 
-geração de resumos inteligentes das consultas veterinárias e auxílio no entendimento das 
-orientações passadas durante os atendimentos.
-
-Este repositório contém a entrega da disciplina **DevOps Tools & Cloud Computing**, 
-focada em containerizar a API e o banco de dados e implantá-los na nuvem usando 
-**Azure Container Registry (ACR)** e **Azure Container Instances (ACI)**.
-
----
-
-# Integrantes
+## Integrantes
 
 | Nome | RM | Turma |
 |---|---|---|
@@ -34,260 +19,137 @@ focada em containerizar a API e o banco de dados e implantá-los na nuvem usando
 | Samantha Faruolo Galdi | RM554794 | 2TDSA |
 | Vitor Fria Dalmagro | RM566052 | 2TDSA |
 
----
+## O que a aplicação faz
 
-# Benefícios para o negócio
+API REST que conecta **responsáveis** (tutores) e **veterinários**:
+- cadastro e login com **JWT**, com dois papéis (`ROLE_RESPONSAVEL` e `ROLE_VETERINARIO`);
+- CRUD de **pets** e do **diário** de cada pet;
+- regra de **posse**: o tutor só acessa os próprios pets e diários; o veterinário consulta os de qualquer tutor.
 
-- **Histórico centralizado**: todo o acompanhamento de saúde do pet (diário de comportamento, alimentação, peso) 
-fica num só lugar, acessível tanto pelo responsável quanto pelo veterinário e acaba com a perda de informação entre consultas.
-- **Disponibilidade e escalabilidade na nuvem**: rodando em containers no Azure, a solução não depende de infraestrutura própria e pode ser replicada/escalada conforme a demanda.
-- **Custo sob controle**: Azure Container Instances cobra por segundo de uso (Pay-as-you-go),não há custo de infraestrutura ociosa como haveria numa VM ligada o tempo todo.
-- **Segurança de credenciais**: senhas e segredos de conexão ficam no Azure Key Vault, nunca no código-fonte (que é público).
+## Stack
 
----
-
-# Desenho da arquitetura
-
-![Diagrama da Arquitetura](/IMAGES/diagramav2.png)
-
-## Componentes
-
-- **Azure Container Registry (ACR)**: registro privado com as duas imagens da solução (`chupinvet/api` e `chupinvet/mysql`).
-- **Container Group único no ACI**, com dois containers:
-  - `api`: a aplicação Spring Boot, única porta exposta publicamente (8080).
-  - `mysql`: banco MySQL 8.4 customizado, acessível **somente via `localhost` dentro do próprio grupo**, nunca exposto à internet.
-- **Azure Storage Account + Azure Files**: volume persistente montado no container do MySQL, garantindo que os dados sobrevivam a reinicializações do container.
-- **Azure Key Vault**: guarda a senha do banco e o segredo do JWT. Nenhum segredo fica no repositório.
-
-
----
-
-# Banco de Dados
-
-O banco é **MySQL 8.4** LTS lançado em abril de 2024, containerizado, com uma imagem customizada (pasta `mysql/`). 
-## Tabelas
-
-O schema tem 5 tabelas (`usuario`, `responsavel`, `veterinario`, `pet`, `diario`). As duas usadas para demonstrar o CRUD completo exigido são **`pet`** e **`diario`** (relação N:1, um pet tem vários registros de diário).
-
-Ver `script_bd.sql` na raiz do repositório para o DDL completo.
-
----
-
-# Endpoints da API
-
-## Autenticação
-
-| Método | Endpoint | Descrição | Acesso |
-|---|---|---|---|
-| POST | `/auth/login` | Login (retorna token JWT) | Público |
-
-## Responsáveis
-
-| Método | Endpoint | Descrição | Acesso |
-|---|---|---|---|
-| POST | `/responsaveis` | Cadastra um novo responsável (signup) | Público |
-| GET | `/responsaveis` | Lista todos os responsáveis | Veterinário |
-| GET | `/responsaveis/{id}` | Busca responsável por ID | Veterinário, ou o próprio responsável |
-| GET | `/responsaveis?page=0&size=10&sort=nomeUsuario,asc` | Busca com paginação/ordenação | Veterinário |
-| PUT | `/responsaveis/{id}` | Atualiza um responsável | O próprio responsável |
-| DELETE | `/responsaveis/{id}` | Remove um responsável | O próprio responsável |
-
-## Veterinários
-
-| Método | Endpoint | Descrição | Acesso |
-|---|---|---|---|
-| POST | `/veterinarios` | Cadastra um novo veterinário (signup) | Público |
-| GET | `/veterinarios` | Lista todos os veterinários | Autenticado |
-| GET | `/veterinarios/{id}` | Busca veterinário por ID | Autenticado |
-| GET | `/veterinarios?page=0&size=10&sort=nomeUsuario,asc` | Busca com paginação/ordenação | Autenticado |
-| GET | `/veterinarios/especialidade?especialidade=Cirurgia` | Busca por especialidade | Autenticado |
-| GET | `/veterinarios/servico?tipoServico=Consulta` | Busca por tipo de serviço | Autenticado |
-| PUT | `/veterinarios/{id}` | Atualiza um veterinário | O próprio veterinário |
-| DELETE | `/veterinarios/{id}` | Remove um veterinário | O próprio veterinário |
-
-## Pets
-
-| Método | Endpoint | Descrição | Acesso |
-|---|---|---|---|
-| POST | `/pets` | Cadastra um novo pet (dono = responsável autenticado) | Responsável |
-| GET | `/pets` | Lista pets (responsável vê só os seus; veterinário vê todos) | Autenticado |
-| GET | `/pets/{id}` | Busca pet por ID | Autenticado (com checagem de posse) |
-| GET | `/pets?page=0&size=10&sort=nomePet,asc` | Busca com paginação/ordenação | Autenticado |
-| GET | `/pets/nome?nomePet=Thor` | Busca pets por nome | Autenticado |
-| GET | `/pets/especie?especie=Cachorro` | Busca pets por espécie | Autenticado |
-| GET | `/pets/raca?raca=Pug` | Busca pets por raça | Autenticado |
-| PUT | `/pets/{id}` | Atualiza um pet | O responsável dono do pet |
-| DELETE | `/pets/{id}` | Remove um pet | O responsável dono do pet |
-
-## Diário
-
-| Método | Endpoint | Descrição | Acesso |
-|---|---|---|---|
-| POST | `/diarios` | Cria um registro de diário para um pet | Responsável dono do pet |
-| GET | `/diarios/pet/{idPet}` | Lista o histórico de diário de um pet (mais recente primeiro) | Autenticado (com checagem de posse) |
-| GET | `/diarios/{id}` | Busca um registro específico | Autenticado (com checagem de posse) |
-| PUT | `/diarios/{id}` | Atualiza um registro | O responsável dono do pet |
-| DELETE | `/diarios/{id}` | Remove um registro | O responsável dono do pet |
-
-## Swagger
-
-| Recurso | Endpoint |
+| Camada | Tecnologia |
 |---|---|
-| Swagger UI | `/swagger-ui.html` |
+| Aplicação | Java 25, Spring Boot 4 (Web, Security, Data JPA), JWT, Swagger |
+| Testes | JUnit 5, Mockito, MockMvc e H2 (26 testes) |
+| Container | Dockerfile multi-stage com `jlink` (JRE enxuto), Alpine e usuário não-root |
+| Banco em nuvem | **Azure Database for MySQL Flexible Server** 8.4 (PaaS) |
+| Execução | **Azure Web App for Containers** (Linux, plano B1) |
+| Registro de imagens | **Azure Container Registry** (ACR) |
+| Infraestrutura | **Terraform** (provider `azurerm`) |
+| CI/CD | **Azure DevOps Pipelines** (YAML), código no **GitHub** |
+| Ambiente local | Podman + `podman-compose` |
 
----
+## Arquitetura e fluxo CI/CD
 
-# Dockerfile da API
+![Diagrama da arquitetura e do fluxo CI/CD](IMAGES/diagrama-sprint4.png)
 
-Multi-stage build com `jlink`, gerando um runtime Java customizado e enxuto:
+| Nº | De → para | O que acontece |
+|---|---|---|
+| 0 | Terraform → Azure | Cria a infraestrutura uma vez: Web App, ACR e MySQL |
+| 1 | IntelliJ + Git → GitHub | `git push` na branch `master` |
+| 2 | GitHub → CI | A pipeline dispara sozinha (trigger `master`) |
+| 3 | CI → Testes | Compila e roda os 26 testes (H2); resultado na aba Tests |
+| 4 | CI → Artefato | Publica o `.jar` no Azure DevOps |
+| 5 | CI → ACR | Build e push da imagem (tags `BuildId` e `latest`) |
+| 6 | Variable group → CD | Injeta os segredos do banco e do JWT (`***`) |
+| 7 | CD → Web App | Deploy da nova imagem e das variáveis de ambiente |
+| 8 | ACR → Web App | O Web App puxa a imagem com identidade gerenciada (`AcrPull`) |
+| 9 | Tutor / Veterinário → Web App | Acessa a API por HTTPS (app mobile ou Swagger) |
+| 10 | Web App → MySQL | Lê e grava os dados (conexão SSL) |
 
-- **Build**: `maven:3-eclipse-temurin-25-alpine` compila e gera, via `jdeps`/`jlink`, um JRE mínimo contendo só os módulos que a aplicação realmente usa.
-- **Runtime**: `alpine:3.21` mesma base do estágio de build, evitando incompatibilidade entre glibc e musl (um JRE gerado em ambiente glibc não roda em Alpine sem essa consistência).
-- **Sem privilégio root**: usuário dedicado `chupinuser`/`chupingroup`, atendendo ao requisito de o container da aplicação nunca rodar como root/admin.
+## Pipeline (`azure-pipelines.yml`)
 
----
+**Gatilho:** todo commit na `master` (mudanças só em `terraform/` ou `scripts/` não disparam).
 
-# Docker Compose (ambiente local)
+**Stage CI**
+1. **Build e testes**: roda dentro do container `maven:3-eclipse-temurin-25`, porque o projeto usa Java 25. Compila, executa os 26 testes, publica os resultados (aba **Tests**) e publica o artefato `chupinvet-api-jar` com o `.jar`.
+2. **Imagem**: só roda se o job anterior passar. Gera a imagem com o `Dockerfile` e envia ao ACR com as tags `$(Build.BuildId)` e `latest`.
 
-O `compose.yml` usa as **mesmas imagens publicadas** que o deploy na nuvem (nenhuma build local), 
-garantindo que o comportamento local seja idêntico ao que roda no ACI:
+**Stage CD** (só depois do CI e só na `master`)
+- Job de *deployment* no environment `producao`, que guarda o histórico de deploys.
+- `AzureWebAppContainer@1` troca a imagem do Web App pela recém-gerada e grava as variáveis de ambiente.
 
-- `mysql`: `docker.io/vitordalmagro/chupinvet-mysql:v1`  imagem customizada.
-- `app`: `docker.io/vitordalmagro/chupinvet-api:mysql-v1`.
+### Segredos
+Nenhuma senha fica no repositório.
 
-Variáveis sensíveis (`JWT_SECRET`) ficam com valor fixo só para uso local em produção (ACI), vêm do Key Vault.
+| Segredo | Onde fica |
+|---|---|
+| Usuário e senha do MySQL, `JWT_SECRET` | Variable group **`chupinvet-producao`** (Pipelines → Library), marcados como secretos; aparecem como `***` nos logs e só são usados no stage CD |
+| Senha do MySQL no Terraform | Variável de ambiente `TF_VAR_mysql_admin_password`, definida no terminal por `terraform/preparar-variaveis.sh` |
+| Ambiente local | Arquivo `.env` (fora do git); modelo em `.env.example` |
+| Acesso da pipeline ao Azure e ao ACR | Service connections `sc-azure-chupinvet` e `sc-acr-chupinvet` |
 
----
+## Banco de dados
 
-# Infraestrutura na Azure (ACR + ACI)
+**Azure Database for MySQL Flexible Server** (`mysql-chupinvet-566052`), banco `chupinvet`. O DDL e a carga inicial estão em [`script_bd.sql`](script_bd.sql): tabelas `usuario`, `responsavel`, `veterinario`, `pet` e `diario`, além de 3 usuários de exemplo (senha `senha123`). A API usa `ddl-auto=validate`, ou seja, confere o schema mas nunca o altera.
 
-Todos os recursos são criados via **Azure CLI**, através dos scripts na pasta `scripts/`, nesta ordem:
+## Como reproduzir
 
-```text
-scripts/
-├── 00-config.sh                     => variáveis compartilhadas
-├── 01-criar-acr.sh                  => Resource Group + Azure Container Registry
-├── 02-publicar-imagens.sh           => puxa as imagens do Docker Hub e republica no ACR (roda LOCAL)
-├── 03-criar-storage.sh              => Storage Account + Azure Files (persistência do MySQL)
-├── 04-criar-keyvault.sh             => Key Vault + segredos (senha do banco, JWT secret)
-├── 05-implantar-container-group.sh  => sobe o Container Group (API + MySQL)
-└── 06-LIMPAR-RECURSOS.sh            => apaga TUDO (Resource Group + purge do Key Vault)
-```
-
-- Os scripts `01`, `03`, `04` e `05` rodam no **Cloud Shell** (só precisam do Azure CLI).
-- O `02-publicar-imagens.sh` roda na **máquina local** (precisa do Podman ou Docker instalado), é o único passo que não usa Azure CLI.
-
-## Pré-requisitos
-
-- Conta Azure com assinatura ativa
-- Podman (ou Docker) instalado localmente
-- Azure CLI (`az login` já autenticado, ou usar o Cloud Shell do portal)
-
-## Passo a passo
-
+### 1. Infraestrutura (Terraform)
+Pré-requisitos: Azure CLI (`az login`) e Terraform.
 ```bash
-# 1. Clone o repositório
-git clone https://github.com/ChupinVet/DevOpsChallenge.git
-cd DevOpsChallenge
-
-# 2. No Cloud Shell (ou local, com az CLI autenticado): cria o Resource Group e o ACR
-bash scripts/01-criar-acr.sh
-
-# 3. Na sua máquina local: puxa as imagens do Docker Hub e publica no ACR privado
-bash scripts/02-publicar-imagens.sh
-# Usa o Azure CLI já autenticado (az login) para pegar as credenciais do ACR sozinho
-
-# 4. No Cloud Shell: cria o Storage Account/File Share e o Key Vault
-bash scripts/03-criar-storage.sh
-bash scripts/04-criar-keyvault.sh
-
-# 5. No Cloud Shell: implanta o Container Group (API + MySQL)
-bash scripts/05-implantar-container-group.sh
+cd terraform
+source preparar-variaveis.sh     # pede a senha do MySQL (Enter gera uma) e libera o seu IP no firewall
+terraform init
+terraform plan
+terraform apply
 ```
+Recursos criados no grupo `rg-chupinvet-sprint4` (mexicocentral): ACR, App Service Plan B1, Web App, MySQL Flexible Server, database e regras de firewall.
 
-O script final imprime a URL pública da API. Como o IP do ACI pode mudar a cada novo deploy, para consultá-lo depois é só rodar:
-
+### 2. Carga do banco
+Da raiz do repositório, no mesmo terminal do `source`:
 ```bash
-az container show \
-  --resource-group rg-chupinvet-aci-566052 \
-  --name aci-chupinvet-566052 \
-  --query ipAddress.ip \
-  --output tsv
+./scripts/carregar-banco.sh       # roda o script_bd.sql no MySQL da nuvem (uma vez só)
 ```
+O script descobre o endereço do banco pela saída do Terraform e usa o cliente `mysql` de um container temporário, sem instalar nada.
 
-## Removendo tudo depois
+### 3. Azure DevOps
+1. Service connections: **Azure Resource Manager** (`sc-azure-chupinvet`, escopo no grupo de recursos) e **Docker Registry / ACR** (`sc-acr-chupinvet`).
+2. Library → variable group `chupinvet-producao`: `SPRING_DATASOURCE_URL` e, como secretos, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD` e `JWT_SECRET`.
+3. Environments → `producao`.
+4. Pipelines → New pipeline → **GitHub (YAML)** → este repositório → *Existing Azure Pipelines YAML file* → `/azure-pipelines.yml`.
 
+A partir daí, cada commit na `master` executa CI e CD sozinho.
+
+### Ambiente local (sem Azure)
 ```bash
-bash scripts/06-LIMPAR-RECURSOS.sh
+cp .env.example .env          # e troque os valores
+podman-compose up -d --build
 ```
+Swagger em http://localhost:8080/swagger-ui.html.
 
-Pede confirmação (digitar o nome do Resource Group) antes de apagar. 
-Remove o Resource Group inteiro e purga o Key Vault, sem isso, o nome do Key Vault fica bloqueado por até 90 dias (soft-delete do Azure) e um próximo `04-criar-keyvault.sh` falharia.
+## Testando o CRUD
 
-## Testando a aplicação na nuvem
+No Swagger: `POST /auth/login` com `ana.costa@teste.com` / `senha123`, copie o `token`, clique em **Authorize** e use os endpoints de `/pets` e `/diarios`.
 
+| Operação | Endpoint |
+|---|---|
+| Inserir | `POST /pets` |
+| Consultar | `GET /pets` · `GET /pets/{id}` |
+| Atualizar | `PUT /pets/{id}` |
+| Apagar | `DELETE /pets/{id}` |
+
+Para conferir cada operação direto no banco (da raiz do repositório, depois do `source terraform/preparar-variaveis.sh`):
 ```bash
-# Swagger
-http://<IP_DA_API>:8080/swagger-ui.html
-
-# Endpoint público (sem autenticação)
-curl http://<IP_DA_API>:8080/veterinarios
-
-# Login com um dos usuários de exemplo do script_bd.sql (senha: senha123)
-curl -X POST http://<IP_DA_API>:8080/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"ana.costa@teste.com","senha":"senha123"}'
+./scripts/conectar-banco.sh "SELECT id_pet, nm_pet, tp_especie, nm_raca, qtd_idade_pet, vl_peso, responsavel_id_responsavel FROM pet;"
 ```
+Sem argumento, `./scripts/conectar-banco.sh` abre o prompt `mysql>` para digitar os comandos.
 
-## Consultando o banco diretamente (evidência de persistência)
+## Estrutura
 
-```bash
-az container exec \
-  --resource-group rg-chupinvet-aci-566052 \
-  --name aci-chupinvet-566052 \
-  --container-name mysql \
-  --exec-command "/bin/bash"
-
-# dentro do container:
-mysql -uroot -p
-# (cola a senha obtida com o comando abaixo, quando solicitado)
-```
-
-Para obter a senha do banco (guardada no Key Vault, nunca no código):
-
-```bash
-az keyvault secret show \
-  --vault-name kv-chupinvet-566052 \
-  --name db-password \
-  --query value \
-  --output tsv
+```txt
+├── azure-pipelines.yml   => pipeline CI/CD
+├── terraform/            => infraestrutura como código (Web App, ACR, MySQL)
+├── scripts/              => carregar e consultar o MySQL da nuvem
+├── Dockerfile            => imagem da API (multi-stage, jlink, não-root)
+├── script_bd.sql         => DDL e carga inicial do MySQL
+├── compose.yml           => ambiente local (API + MySQL)
+├── mysql/                => imagem do MySQL usada só no ambiente local
+├── IMAGES/               => diagrama da arquitetura
+└── src/                  => código da API e testes
 ```
 
 ---
 
-# Como Executar Localmente (sem Azure)
-
-```bash
-git clone https://github.com/ChupinVet/DevOpsChallenge.git
-cd DevOpsChallenge
-
-# Com Podman:
-podman-compose -f compose.yml up -d
-
-# Ou com Docker:
-docker compose -f compose.yml up -d
-```
-
-Acesse:
-```text
-http://localhost:8080
-http://localhost:8080/swagger-ui.html
-```
-
----
-
-# Disciplina
-
-DevOps Tools e Cloud Computing
-
-FIAP
+DevOps Tools & Cloud Computing · FIAP
