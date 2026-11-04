@@ -18,10 +18,10 @@ public class OpenApiConfig {
 
     private static final String SECURITY_SCHEME_NAME = "bearerAuth";
 
-    private static final String TITULO = "ChupinVet API";
+    private static final String TITULO = "ChupinVet API · Sprint 4 DevOps";
     private static final String DESCRICAO =
-            "API do ChupinVet: responsáveis, veterinários, pets e diário de saúde.";
-    private static final String VERSAO = "v1.0.0";
+            "API do ChupinVet com deploy contínuo no Azure Web App e banco MySQL no Azure (PaaS).";
+    private static final String VERSAO = "v1.1.0";
 
     @Bean
     public OpenAPI customOpenAPI() {
