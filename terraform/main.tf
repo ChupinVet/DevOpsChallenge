@@ -9,7 +9,7 @@ resource "azurerm_resource_group" "this" {
   }
 }
 
-# ---------- Registro das imagens ----------
+# Registro das imagens
 resource "azurerm_container_registry" "acr" {
   name                = "acrchupinvet${var.sufixo}"
   resource_group_name = azurerm_resource_group.this.name
@@ -18,7 +18,7 @@ resource "azurerm_container_registry" "acr" {
   admin_enabled       = true
 }
 
-# ---------- Web App (container) ----------
+# Web App (container)
 resource "azurerm_service_plan" "plan" {
   name                = "asp-chupinvet-${var.sufixo}"
   resource_group_name = azurerm_resource_group.this.name
@@ -43,8 +43,7 @@ resource "azurerm_linux_web_app" "webapp" {
     container_registry_use_managed_identity = true
   }
 
-  # Só o que não é segredo. Banco e JWT são definidos pela pipeline (CD),
-  # a partir de variáveis secretas do Azure DevOps.
+  # Só o que não é segredo. Banco e JWT são definidos pela pipeline (CD), a partir de variáveis no Azure DevOps.
   app_settings = {
     WEBSITES_PORT                       = "8080"
     WEBSITES_CONTAINER_START_TIME_LIMIT = "600"
